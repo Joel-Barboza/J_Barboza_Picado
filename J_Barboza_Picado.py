@@ -3,6 +3,7 @@ import time
 import random
 import pygame
 import os
+import threading
 
 global puntos
 puntos = 0
@@ -42,29 +43,29 @@ class PantallaJuego():
 		self.bg = PhotoImage(file="./img/bg.png").zoom(2,2)
 		self.canvas.create_image( 0, 0, image = self.bg, anchor = "nw")
 
-		self.label_puntos = Label(self.canvas, text=f"{puntos}", font=("Helventica", 30) )
+		self.label_puntos = Label(self.canvas, text=f"{puntos}", font=("Helventica", 30), bg="#2a2a2a", fg="#a2a2a2" )
 		self.label_puntos.place(x=900,y=10)
 
 		self.img = PhotoImage(file="./img/nave2.png")
-		self.alien_Img = self.img
-		self.alien = self.canvas.create_image(50, 250, image=self.alien_Img)
-		self.alien2_x = random.randint(30, 970)
+		self.img_nave = self.img
+		self.alien = self.canvas.create_image(50, 250, image=self.img_nave)
+		self.alien2_x = random.randint(300, 970)
 		self.alien2_y = random.randint(70,480)
 
-		self.alien3_x = random.randint(30, 970)
+		self.alien3_x = random.randint(300, 970)
 		self.alien3_y = random.randint(70,480)
 
-		self.alien4_x = random.randint(30, 970)
+		self.alien4_x = random.randint(300, 970)
 		self.alien4_y = random.randint(70,480)
 
-		self.alien5_x = random.randint(30, 970)
+		self.alien5_x = random.randint(300, 970)
 		self.alien5_y = random.randint(70,480)
 
 
 
-		self.alien3 = self.canvas.create_image( self.alien3_x, self.alien3_y, image=self.alien_Img)
-		self.alien4 = self.canvas.create_image( self.alien4_x, self.alien4_y, image=self.alien_Img)
-		self.alien5 = self.canvas.create_image( self.alien5_x, self.alien5_y, image=self.alien_Img)
+		self.alien3 = self.canvas.create_image( self.alien3_x, self.alien3_y, image=self.img_nave)
+		self.alien4 = self.canvas.create_image( self.alien4_x, self.alien4_y, image=self.img_nave)
+		self.alien5 = self.canvas.create_image( self.alien5_x, self.alien5_y, image=self.img_nave)
 
 
 		#https://pythonguides.com/python-tkinter-image/#Python_Tkinter_Image_Size
@@ -88,7 +89,7 @@ class PantallaJuego():
 		window.bind("<k>", self.generate)
 		window.bind("<space>", self.disparar)
 		window.bind("<Motion>", self.mouse)
-		#window.bind("<Button-1>", self.disparar)
+		window.bind("<Button-1>", self.disparar)
 
 	def generate(self, event):
 		self.alien3_x = random.randint(30, 970)
@@ -142,18 +143,31 @@ class PantallaJuego():
 		if y < 280:
 			self.canvas.move(self.alien, 0,10)
 
+	global listaBalas
+	listaBalas = []
+
+	def lista(self, x,y):
+		listaBalas.append(self.bala)
+		print(listaBalas)
+
 	def disparar(self, event):
 		#pygame.mixer.Channel(1).play(pygame.mixer.Sound("./audio/shot.mp3"))
 		x = self.canvas.coords(self.alien)[0]
 		y = self.canvas.coords(self.alien)[1]
-		self.cuadro = Canvas( window, width=15, height=4, bg="#ffe305", highlightthickness=0, relief="ridge" )
-		#self.cuadro.place( x=x+20, y=y+10)
-		self.animar(x,y)
+		self.bala = Canvas( window, width=15, height=4, bg="#ffe305", highlightthickness=0, relief="ridge" )
+		#self.bala.place( x=x+20, y=y+10)
+		#self.lista(x,y)
+		#threading.Thread(target=self.animar(x,y).start())
+		self.animar(x, y)
+
+	
+	
 
 
 	def animar(self, x, y):
 		# x=x+"ancho de nave", y=y+"parte del alto de nave"
-		self.cuadro.place(x = x + 20, y= y - 2)
+		self.bala.place(x = x + 20, y= y - 2)
+		#listaBalas[0].place(x=100, y=100)
 		window.update()
 		time.sleep(0.01)
 		global puntos
@@ -162,7 +176,7 @@ class PantallaJuego():
 			self.alien2_y = 0
 			self.alien2_x = 0
 			self.canvas.delete(self.alien2)
-			self.cuadro.place_forget()
+			self.bala.place_forget()
 			puntos += 10
 			self.label_puntos['text'] = f"{puntos}"
 
@@ -170,7 +184,7 @@ class PantallaJuego():
 			self.alien3_y = 0
 			self.alien3_x = 0
 			self.canvas.delete(self.alien3)
-			self.cuadro.place_forget()
+			self.bala.place_forget()
 			puntos += 10
 			self.label_puntos['text'] = f"{puntos}"
 
@@ -178,7 +192,7 @@ class PantallaJuego():
 			self.alien4_y = 0
 			self.alie4_x = 0
 			self.canvas.delete(self.alien4)
-			self.cuadro.place_forget()
+			self.bala.place_forget()
 			puntos += 10
 			self.label_puntos['text'] = f"{puntos}"
 
@@ -186,7 +200,7 @@ class PantallaJuego():
 			self.alien5_y = 0
 			self.alien5_x = 0
 			self.canvas.delete(self.alien5)
-			self.cuadro.place_forget()
+			self.bala.place_forget()
 			puntos += 10
 			self.label_puntos['text'] = f"{puntos}"
 
@@ -194,7 +208,7 @@ class PantallaJuego():
 			return self.animar(x,y)
 		else:
 			# https://stackoverflow.com/questions/44727258/unplace-all-widgets-from-canvas
-			self.cuadro.place_forget()
+			self.bala.place_forget()
 
 class nave():
 	def __init__(self, x, y, canvas):
